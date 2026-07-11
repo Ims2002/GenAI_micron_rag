@@ -13,7 +13,17 @@ Ejecutar con:
 """
 
 import os
+import sys
 import uuid
+
+# Fuerza salida en UTF-8: algunos entornos de despliegue (p. ej. Streamlit
+# Community Cloud) usan por defecto una codificación ASCII para stdout/stderr,
+# lo que provoca UnicodeEncodeError en cuanto algo intenta imprimir un emoji o
+# una tilde (el proyecto usa muchos: 🧠, ✅, "año", "compañía"...).
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 
 import streamlit as st
 from dotenv import load_dotenv
