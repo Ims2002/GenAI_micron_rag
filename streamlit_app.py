@@ -237,6 +237,23 @@ st.markdown(
 
 @st.cache_resource(show_spinner="Cargando base de conocimiento y agente...")
 def cargar_agente(api_key: str):
+    import chromadb
+
+    if not os.path.isdir(PERSIST_DIR):
+        st.error(
+            f"No existe la carpeta `{PERSIST_DIR}` en este entorno "
+            f"(directorio actual: `{os.getcwd()}`). Comprueba que "
+            "`chroma_db_micron/` esté realmente en la raíz del repo desplegado."
+        )
+        st.stop()
+
+    # Diagnóstico: qué colecciones ve el cliente persistente y cuántos
+    # elementos tiene cada una, para distinguir "carpeta vacía/ruta mal" de
+    # "colección con nombre distinto" de "incompatibilidad de versión".
+    cliente_diag = chromadb.PersistentClient(path=PERSIST_DIR)
+    colecciones = cliente_diag.list_collections()
+    nombres_y_conteos = {c.name: c.count() for c in colecciones}
+
     embeddings = GoogleGenerativeAIEmbeddings(model=EMBEDDING_MODEL, google_api_key=api_key)
     vectorstore = Chroma(
         collection_name=COLLECTION_NAME,
@@ -246,8 +263,15 @@ def cargar_agente(api_key: str):
 
     if vectorstore._collection.count() == 0:
         st.error(
-            "La base de conocimiento vectorial está vacía. Ejecuta primero "
-            "Micron_RAG_Agent.ipynb hasta completar la sección 5 (indexación en ChromaDB)."
+            "La base de conocimiento vectorial está vacía o no coincide con lo "
+            "esperado.\n\n"
+            f"- Colección buscada: `{COLLECTION_NAME}`\n"
+            f"- Colecciones encontradas en `{PERSIST_DIR}`: `{nombres_y_conteos or 'ninguna'}`\n"
+            f"- Versión de chromadb instalada: `{chromadb.__version__}`\n\n"
+            "Si la colección buscada no aparece en la lista, revisa que "
+            "`chroma_db_micron/` esté completa en el repo (no truncada por "
+            "Git LFS/límites de tamaño) y que la versión de `chromadb` en "
+            "`requirements.txt` coincida con la usada para generarla."
         )
         st.stop()
 

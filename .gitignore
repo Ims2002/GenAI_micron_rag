@@ -1,7 +1,7 @@
 # Variables de entorno / API keys
 .env
 
-
+pip show chromadb
 
 # Documentos fuente descargados (pesados; ver data/micron_docs/LEEME.txt para obtenerlos)
 data/micron_docs/*
