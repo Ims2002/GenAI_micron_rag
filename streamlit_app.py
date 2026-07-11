@@ -98,6 +98,30 @@ st.markdown(
     <style>
     .stApp {
         background: linear-gradient(180deg, #f4f9fc 0%, #ffffff 55%);
+        color: #1f2933;
+    }
+
+    /* Fuerza texto legible en el área de chat independientemente del tema
+       claro/oscuro del navegador (evita texto blanco sobre fondo claro). */
+    [data-testid="stChatMessageContent"],
+    [data-testid="stChatMessageContent"] p,
+    [data-testid="stChatMessageContent"] li,
+    [data-testid="stChatMessageContent"] strong,
+    [data-testid="stMarkdownContainer"],
+    [data-testid="stMarkdownContainer"] p,
+    [data-testid="stMarkdownContainer"] li {
+        color: #1f2933 !important;
+    }
+    [data-testid="stChatMessageContent"] code,
+    [data-testid="stMarkdownContainer"] code {
+        background-color: #eaf6fb !important;
+        color: #0b3d91 !important;
+        padding: 1px 6px;
+        border-radius: 5px;
+        font-weight: 600;
+    }
+    [data-testid="stCaptionContainer"] {
+        color: #5b6b7c !important;
     }
 
     .mu-header {
