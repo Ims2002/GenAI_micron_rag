@@ -122,6 +122,13 @@ Se abre en `http://localhost:8501`. Cada pestaña/sesión del navegador obtiene 
 `thread_id`, por lo que la memoria de conversación queda aislada por sesión (igual que la
 verificación multi-thread de la sección 12 del notebook).
 
+**Demo pública (Streamlit Community Cloud):** si se despliega sin configurar `GEMINI_API_KEY`
+en los "Secrets" de la app, la propia interfaz pide a quien la visite que introduzca su propia
+API key gratuita de Gemini (https://aistudio.google.com/app/apikey) en la barra lateral. Esa
+clave solo se usa en memoria durante esa sesión del navegador y nunca se guarda en disco ni se
+comparte. En local, si existe `.env` con `GEMINI_API_KEY`, el comportamiento no cambia: se usa
+esa clave automáticamente sin pedir nada.
+
 ## 6. Estructura del proyecto
 
 ```

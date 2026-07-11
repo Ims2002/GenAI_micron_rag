@@ -25,7 +25,24 @@ from langchain.agents import create_agent
 from langgraph.checkpoint.memory import InMemorySaver
 
 load_dotenv()
-API_KEY = os.getenv("GEMINI_API_KEY")
+
+
+def resolver_api_key():
+    """Busca la API key primero en variables de entorno / .env (uso local, sin
+    cambios respecto al comportamiento actual) y luego en los "Secrets" de
+    Streamlit Community Cloud (uso en el despliegue publicado). Si no
+    encuentra ninguna, devuelve None y la propia interfaz le pedirá al
+    visitante que introduzca la suya para poder probar la demo."""
+    clave = os.getenv("GEMINI_API_KEY")
+    if clave:
+        return clave
+    try:
+        return st.secrets["GEMINI_API_KEY"]
+    except Exception:
+        return None
+
+
+API_KEY = resolver_api_key()
 
 CHAT_MODEL = "gemini-2.5-flash"
 EMBEDDING_MODEL = "gemini-embedding-001"
@@ -219,15 +236,8 @@ st.markdown(
 
 
 @st.cache_resource(show_spinner="Cargando base de conocimiento y agente...")
-def cargar_agente():
-    if not API_KEY:
-        st.error(
-            "No se encontró GEMINI_API_KEY. Crea un archivo .env con tu clave "
-            "(ver .env.example) antes de continuar."
-        )
-        st.stop()
-
-    embeddings = GoogleGenerativeAIEmbeddings(model=EMBEDDING_MODEL, google_api_key=API_KEY)
+def cargar_agente(api_key: str):
+    embeddings = GoogleGenerativeAIEmbeddings(model=EMBEDDING_MODEL, google_api_key=api_key)
     vectorstore = Chroma(
         collection_name=COLLECTION_NAME,
         embedding_function=embeddings,
@@ -264,7 +274,7 @@ def cargar_agente():
             )
         return "\n\n---\n\n".join(resultados)
 
-    llm = ChatGoogleGenerativeAI(model=CHAT_MODEL, temperature=0.2, google_api_key=API_KEY)
+    llm = ChatGoogleGenerativeAI(model=CHAT_MODEL, temperature=0.2, google_api_key=api_key)
     checkpointer = InMemorySaver()
     agente = create_agent(
         model=llm,
@@ -275,7 +285,40 @@ def cargar_agente():
     return agente
 
 
-agente_micron = cargar_agente()
+if not API_KEY:
+    # No hay clave en .env (local) ni en Secrets (demo publicada en Streamlit
+    # Community Cloud): dejamos que quien esté probando la app introduzca su
+    # propia API key gratuita solo para esta sesión (no se guarda en disco).
+    with st.sidebar:
+        st.info(
+            "Esta demo pública no trae una API key configurada. Introduce la "
+            "tuya (gratis) para poder probarla:"
+        )
+        API_KEY = st.text_input(
+            "Tu Gemini API key",
+            type="password",
+            placeholder="AIza...",
+            help=(
+                "Consíguela gratis en https://aistudio.google.com/app/apikey. "
+                "Solo se usa en tu sesión del navegador, nunca se guarda ni se "
+                "envía a ningún sitio salvo a la propia API de Google."
+            ),
+        )
+        st.caption(
+            "🔒 **Aviso de privacidad:** tu API key solo se usa para las consultas "
+            "que hagas al modelo Gemini durante esta sesión del navegador. No se "
+            "guarda en ningún fichero, base de datos, log ni servidor de esta "
+            "aplicación, ni se comparte con nadie — desaparece en cuanto cierras "
+            "o recargas la pestaña. Se envía únicamente a la API oficial de "
+            "Google (`generativelanguage.googleapis.com`) para procesar tus "
+            "preguntas, igual que si la usaras en tu propio notebook."
+        )
+    if not API_KEY:
+        st.title("🧠 Asistente Experto en Micron Technology")
+        st.info("👈 Introduce tu API key de Gemini en la barra lateral para empezar a chatear.")
+        st.stop()
+
+agente_micron = cargar_agente(API_KEY)
 
 if "thread_id" not in st.session_state:
     # Cada sesión de navegador tiene su propio thread_id -> memoria de conversación aislada por
