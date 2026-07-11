@@ -44,7 +44,7 @@ def resolver_api_key():
 
 API_KEY = resolver_api_key()
 
-CHAT_MODEL = "gemini-2.5-flash"
+CHAT_MODEL = "gemini-3.5-flash"
 EMBEDDING_MODEL = "gemini-embedding-001"
 PERSIST_DIR = "./chroma_db_micron"
 COLLECTION_NAME = "micron_knowledge_base"
