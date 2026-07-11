@@ -1,9 +1,7 @@
 # Variables de entorno / API keys
 .env
 
-# Base de conocimiento vectorial (se regenera al ejecutar el notebook)
-chroma_db_micron/
-*.sqlite3
+
 
 # Documentos fuente descargados (pesados; ver data/micron_docs/LEEME.txt para obtenerlos)
 data/micron_docs/*
